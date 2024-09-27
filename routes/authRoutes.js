@@ -1,8 +1,11 @@
 const express = require('express');
-const { registerUser, updateUserProfile } = require('../controllers/authController');
+const { registerUser, loginUser, updateUserProfile } = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware'); // Adjust path as necessary
+
 const router = express.Router();
 
 router.post('/register', registerUser);
-router.put('/update', updateUserProfile); // Or whatever endpoint you need
+router.post('/login', loginUser);
+router.put('/profile', authMiddleware, updateUserProfile); // Protect this route with authMiddleware
 
 module.exports = router;

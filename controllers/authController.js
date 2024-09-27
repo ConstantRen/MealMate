@@ -1,5 +1,5 @@
 const { auth, firestore } = require('../config/firebase');
-const { createUserWithEmailAndPassword } = require('firebase/auth');
+const { createUserWithEmailAndPassword, signInWithEmailAndPassword } = require('firebase/auth');
 const { doc, setDoc } = require('firebase/firestore');
 
 // Register a new user
@@ -34,10 +34,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-
-
-
-
+// Update user profile
 const updateUserProfile = async (req, res) => {
   const { uid } = req.user; // Assume user is authenticated and uid is in req.user
   const { username, preferences, savedRecipesIds, mealPlanIds } = req.body;
@@ -55,4 +52,29 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, updateUserProfile };
+// User login
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Check if email and password are provided
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required." });
+  }
+
+  try {
+    // Sign in the user using Firebase Authentication
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // You can include additional logic here (e.g., generating tokens, session management)
+    res.status(200).json({ message: "Login successful", uid: user.uid, email: user.email });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  updateUserProfile,
+  loginUser
+};

@@ -1,10 +1,14 @@
-// routes/mealPlanRoutes.js
 const express = require('express');
-const { getMealPlans, updateMealPlan } = require('../controllers/mealPlanController');
 const router = express.Router();
+const { createMealPlan, getAllMealPlans, getMealPlanById, updateMealPlan, deleteMealPlan } = require('../controllers/mealPlanController');
 
-// Define the routes
-router.get('/:userId', getMealPlans); // Get meal plans for a specific user
-router.put('/:mealPlanId', updateMealPlan); // Update a specific meal plan
+// Define the route for creating a new meal plan
+router.post('/mealPlans', createMealPlan);
+
+// Define other routes as needed
+router.get('/mealPlans/:userId', getAllMealPlans);
+router.get('/mealPlans/:mealPlanId', getMealPlanById);
+router.put('/mealPlans/:mealPlanId', updateMealPlan);
+router.delete('/mealPlans/:mealPlanId', deleteMealPlan);
 
 module.exports = router;
