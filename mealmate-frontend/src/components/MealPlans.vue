@@ -1,69 +1,74 @@
 <template>
-    <div>
-      <h1>My Meal Plans</h1>
-      <input v-model="userId" placeholder="Enter your User ID" />
-      <button @click="fetchMealPlans">Get Meal Plans</button>
-  
-      <ul v-if="mealPlans.length > 0">
-        <li v-for="mealPlan in mealPlans" :key="mealPlan.id">
-          <router-link :to="`/mealPlans/${mealPlan.id}`">{{ mealPlan.title }}</router-link>
-        </li>
-      </ul>
-        
-      <div v-else-if="errorMessage">{{ errorMessage }}</div>
-  
-      <div v-if="mealPlan">
-        <h2>{{ mealPlan.title }}</h2>
-        <p>{{ mealPlan.description }}</p>
-        <p><strong>Start Date:</strong> {{ mealPlan.startDate }}</p>
-        <p><strong>End Date:</strong> {{ mealPlan.endDate }}</p>
-        <h3>Meals:</h3>
-        <ul>
-          <li v-for="meal in mealPlan.meals" :key="meal.id">{{ meal }}</li>
-        </ul>
+  <div class="meal-plans container mt-5">
+    <h2>Your Meal Plans</h2>
+    
+    <!-- Show loading spinner or message -->
+    <div v-if="loading">Loading meal plans...</div>
+
+    <!-- Show error message if any -->
+    <p v-if="error" class="text-danger">{{ error }}</p>
+
+    <!-- Display meal plans if available -->
+    <div v-if="mealPlans.length">
+      <div v-for="plan in mealPlans" :key="plan.id" class="meal-plan">
+        <h4>{{ plan.title }}</h4>
+        <p>{{ plan.description }}</p>
+        <!-- You can add more details or options to edit/delete the meal plan here -->
       </div>
-  
-      <input v-model="mealPlanId" placeholder="Enter Meal Plan ID" />
-      <button @click="fetchMealPlan">Get Meal Plan</button>
-      
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        userId: '', // Store the user ID here
-        mealPlanId: '', // Store the meal plan ID here
-        mealPlans: [], // Store the list of meal plans
-        mealPlan: null, // Store the fetched meal plan
-        errorMessage: '' // For handling error messages
-      };
-    },
-    methods: {
-      async fetchMealPlans() {
-        try {
-          const response = await axios.get(`http://localhost:3000/mealPlans/user/${this.userId}`);
-          this.mealPlans = response.data.mealPlans; // Update to store the fetched meal plans
-          this.errorMessage = ''; // Clear error message if successful
-        } catch (error) {
-          console.error('Error fetching meal plans:', error);
-          this.errorMessage = 'No meal plans found for this user.'; // Set an error message
-          this.mealPlans = []; // Clear meal plans on error
-        }
-      },
-      async fetchMealPlan() {
-        try {
-          const response = await axios.get(`http://localhost:3000/mealPlans/${this.mealPlanId}`);
-          this.mealPlan = response.data.mealPlan; // Update to store the meal plan data
-        } catch (error) {
-          console.error('Error fetching meal plan:', error);
-          this.errorMessage = 'Meal plan not found'; // Set an error message
-        }
+    <div v-else>If you don't have any meal plans, consider creating one!</div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'MealPlans',
+  data() {
+    return {
+      mealPlans: [], // Array to hold meal plans
+      error: '',
+      loading: false,
+    };
+  },
+  mounted() {
+    this.fetchMealPlans(); // Fetch meal plans when component is mounted
+  },
+  methods: {
+    async fetchMealPlans() {
+      const userId = localStorage.getItem('userId'); // Get user ID from localStorage
+
+      if (!userId) {
+        this.error = 'User not logged in. Please log in to view your meal plans.';
+        return;
       }
-    }
-  };
-  </script>
-  
+
+      this.loading = true; // Start loading
+
+      try {
+        const response = await axios.get(`http://localhost:3000/mealPlans/user/${userId}`);
+        this.mealPlans = response.data.mealPlans; // Correctly assigning meal plans from response
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Failed to fetch meal plans.';
+        console.error('Error fetching meal plans:', error);
+      } finally {
+        this.loading = false; // End loading
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.meal-plan {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+h4 {
+  margin-bottom: 5px;
+}
+</style>
