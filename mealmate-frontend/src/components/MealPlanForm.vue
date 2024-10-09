@@ -56,9 +56,11 @@ export default {
       };
 
       try {
-        const response = await axios.post('http://localhost:3000/mealPlans/user/', mealPlanData);
+        const response = await axios.post('http://localhost:3000/mealPlans/', mealPlanData);
         console.log('Meal plan created:', response.data);
-        this.$router.push('/mealPlans');
+
+        // Redirect to the user's meal plans page
+        this.$router.push(`/mealPlans/user/${this.userId}`);
       } catch (error) {
         console.error('Error creating meal plan:', error);
       }

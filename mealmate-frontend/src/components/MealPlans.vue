@@ -11,7 +11,9 @@
     <!-- Display meal plans if available -->
     <div v-if="mealPlans.length">
       <div v-for="plan in mealPlans" :key="plan.id" class="meal-plan">
-        <h4>{{ plan.title }}</h4>
+        <router-link :to="{ name: 'MealPlanDetails', params: { mealPlanId: plan.id } }">
+          <h4>{{ plan.title }}</h4>
+        </router-link>
         <p>{{ plan.description }}</p>
         <!-- You can add more details or options to edit/delete the meal plan here -->
       </div>
@@ -70,5 +72,10 @@ export default {
 
 h4 {
   margin-bottom: 5px;
+  color: #007bff; /* Optional: Add color to the meal plan title */
+}
+
+.router-link {
+  text-decoration: none; /* Remove underline from links */
 }
 </style>

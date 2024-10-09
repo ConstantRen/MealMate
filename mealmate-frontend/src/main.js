@@ -1,7 +1,10 @@
+// src/main.js
 import { createApp } from 'vue';
 import App from './App.vue';
-import router from './router';
+import store from './store'; // Ensure this path is correct
+import router from './router'; // If you're using Vue Router
 
-createApp(App)
-  .use(router)
-  .mount('#app');
+const app = createApp(App);
+app.use(store); // Use the Vuex store
+app.use(router); // Use Vue Router
+app.mount('#app');

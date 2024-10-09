@@ -15,9 +15,9 @@ const {
 
 // Create a new meal plan
 const createMealPlan = async (req, res) => {
-  const { userId, title, description, startDate, endDate, meals } = req.body;
+  const { userId, title, description, startDate, endDate } = req.body;
 
-  if (!userId || !title || !description || !startDate || !endDate || !meals) {
+  if (!userId || !title || !description || !startDate || !endDate) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -28,7 +28,7 @@ const createMealPlan = async (req, res) => {
       description,
       startDate,
       endDate,
-      meals,
+      meals: [], // Initialize meals as an empty array
     });
 
     const userRef = doc(firestore, 'users', userId);
@@ -62,15 +62,17 @@ const getAllMealPlans = async (req, res) => {
   }
 };
 
+
+
 // Get a specific meal plan by its ID
 const getMealPlanById = async (req, res) => {
   const { mealPlanId } = req.params;
-  console.log("MealPlan ID received:", mealPlanId); // Add this line to log the ID
+  console.log("MealPlan ID received:", mealPlanId);
 
   try {
     const mealPlanDoc = await getDoc(doc(firestore, 'mealPlans', mealPlanId));
     if (mealPlanDoc.exists()) {
-      res.status(200).json({ mealPlan: { id: mealPlanDoc.id, ...mealPlanDoc.data() } }); // Include the ID in the response
+      res.status(200).json({ mealPlan: { id: mealPlanDoc.id, ...mealPlanDoc.data() } });
     } else {
       res.status(404).json({ message: "Meal plan not found" });
     }
@@ -80,14 +82,37 @@ const getMealPlanById = async (req, res) => {
   }
 };
 
-// Update a meal plan by its ID
-const updateMealPlan = async (req, res) => {
-  const { mealPlanId } = req.params;
-  const { title, description, startDate, endDate, meals } = req.body;
+// Add a recipe to a meal plan
+const addRecipeToMealPlan = async (req, res) => {
+  const { mealPlanId, recipeId } = req.body; // Assume mealPlanId and recipeId are passed in the request body
+
+  if (!mealPlanId || !recipeId) {
+    return res.status(400).json({ message: "Both mealPlanId and recipeId are required." });
+  }
 
   try {
     const mealPlanRef = doc(firestore, 'mealPlans', mealPlanId);
-    await updateDoc(mealPlanRef, { title, description, startDate, endDate, meals });
+
+    // Add the recipeId to the meals array of the meal plan
+    await updateDoc(mealPlanRef, {
+      meals: arrayUnion(recipeId),
+    });
+
+    res.status(200).json({ message: "Recipe added to meal plan successfully" });
+  } catch (error) {
+    console.error("Error adding recipe to meal plan:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update a meal plan by its ID
+const updateMealPlan = async (req, res) => {
+  const { mealPlanId } = req.params;
+  const { title, description, startDate, endDate } = req.body;
+
+  try {
+    const mealPlanRef = doc(firestore, 'mealPlans', mealPlanId);
+    await updateDoc(mealPlanRef, { title, description, startDate, endDate });
     res.status(200).json({ message: "Meal plan updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -96,22 +121,18 @@ const updateMealPlan = async (req, res) => {
 
 // Delete a meal plan by its ID and update the user's mealPlanIds
 const deleteMealPlan = async (req, res) => {
-  const { mealPlanId } = req.params; // Get mealPlanId from request parameters
-  const { userId } = req.body; // Assuming userId is passed in the request body
+  const { mealPlanId } = req.params;
+  const { userId } = req.body; 
 
   try {
-    // Reference to the meal plan document
     const mealPlanDocRef = doc(firestore, 'mealPlans', mealPlanId);
 
-    // Delete the meal plan document
     await deleteDoc(mealPlanDocRef);
 
-    // Reference to the user document
     const userDocRef = doc(firestore, 'users', userId);
 
-    // Update the user's mealPlanIds array by removing the deleted mealPlanId
     await updateDoc(userDocRef, {
-      mealPlanIds: arrayRemove(mealPlanId) // Use arrayRemove to remove the meal plan ID
+      mealPlanIds: arrayRemove(mealPlanId)
     });
 
     return res.status(200).json({ message: 'Meal plan deleted successfully and user updated' });
@@ -121,4 +142,4 @@ const deleteMealPlan = async (req, res) => {
   }
 };
 
-module.exports = { createMealPlan, getAllMealPlans, getMealPlanById, updateMealPlan, deleteMealPlan };
+module.exports = { createMealPlan, getAllMealPlans, getMealPlanById, addRecipeToMealPlan, updateMealPlan, deleteMealPlan };
