@@ -4,8 +4,23 @@ const authMiddleware = require('../middlewares/authMiddleware'); // Adjust path 
 
 const router = express.Router();
 
+// Route to render the registration page
+router.get('/register', (req, res) => {
+  res.render('register'); // Ensure you have a register.ejs view
+});
+
+// Route to handle user registration
 router.post('/register', registerUser);
+
+// Route to render the login page
+router.get('/login', (req, res) => {
+  res.render('signIN'); // Ensure you have a signIN.ejs view
+});
+
+// Route to handle user login
 router.post('/login', loginUser);
-router.put('/profile', authMiddleware, updateUserProfile); // Protect this route with authMiddleware
+
+// Route to update user profile (protected by middleware)
+router.put('/profile', authMiddleware, updateUserProfile);
 
 module.exports = router;

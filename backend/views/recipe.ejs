@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Food Landing Page</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">LOGO</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipe.html">Recipe Discovery</a></li>
+                <li><a href="#">Nutrition Tracking/Meal Plan</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="main-content">
+        <div class="text-section">
+            <h1>Change Your Relationship With Food For Good</h1>
+            <p>Diet Culture Isn’t Going To Disrupt Itself</p>
+            <p>Transform the way you think about food and build a healthier, more balanced relationship for life. To remove, rebuild, and align your diet choices with a new approach to nourishing your body and soul.</p>
+            <button>Get Started</button>
+        </div>
+        <div class="line2"></div>
+        <div class="recipe-section" id="recipe-section">
+            <!-- Recipe cards will be dynamically inserted here -->
+        </div>
+    </section>
+
+    <script>
+        // Fetch recipes from the backend
+        async function fetchRecipes() {
+            try {
+                const response = await fetch('/recipes', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}` // Include the JWT token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch recipes');
+                }
+
+                const recipes = await response.json();
+                displayRecipes(recipes);
+            } catch (error) {
+                console.error('Error fetching recipes:', error);
+                alert('Could not load recipes. Please log in again.');
+                window.location.href = '/login'; // Redirect to login if unauthorized
+            }
+        }
+
+        // Display fetched recipes on the page
+        function displayRecipes(recipes) {
+            const recipeSection = document.getElementById('recipe-section');
+            recipeSection.innerHTML = ''; // Clear existing content
+
+            recipes.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.classList.add('recipe-card');
+
+                recipeCard.innerHTML = `
+                    <img src="${recipe.image || 'default-image.jpg'}" alt="${recipe.title}">
+                    <h3>${recipe.title}</h3>
+                    <p>${recipe.description}</p>
+                `;
+
+                recipeSection.appendChild(recipeCard);
+            });
+        }
+
+        // Call fetchRecipes on page load
+        window.onload = fetchRecipes;
+    </script>
+</body>
+</html>

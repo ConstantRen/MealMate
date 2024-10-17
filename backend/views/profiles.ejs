@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>User Profile</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/recipe">Recipe Discovery</a></li>
+                <li><a href="/profile">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Welcome, <span id="usernameDisplay"></span></h2> <!-- Placeholder for username -->
+        <form id="updateProfileForm">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="usernameInput" required>
+            <label for="preferences">Preferences:</label>
+            <input type="text" name="preferences" id="preferencesInput" required>
+            <button type="submit">Update Profile</button>
+        </form>
+    </main>
+
+    <script>
+        async function getProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must log in first.');
+                window.location.href = '/login'; // Redirect to login
+                return;
+            }
+
+            const response = await fetch('/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Attach the token
+                },
+            });
+
+            if (response.ok) {
+                const userProfile = await response.json();
+                // Display user profile data
+                document.getElementById('usernameDisplay').textContent = userProfile.username;
+                document.getElementById('usernameInput').value = userProfile.username;
+                document.getElementById('preferencesInput').value = userProfile.preferences.join(', ');
+            } else {
+                const errorData = await response.json();
+                alert(errorData.message); // Handle error response
+            }
+        }
+
+        // Call getProfile when the page loads
+        window.onload = getProfile;
+
+        // Update profile form submission
+        document.getElementById('updateProfileForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('usernameInput').value;
+            const preferences = document.getElementById('preferencesInput').value.split(',').map(pref => pref.trim());
+
+            try {
+                const response = await fetch('/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Attach token
+                    },
+                    body: JSON.stringify({ username, preferences }),
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                if (response.ok) {
+                    window.location.reload(); // Reload the profile page to show updated data
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        });
+    </script>
+</body>
+</html>

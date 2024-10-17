@@ -1,6 +1,7 @@
 const { auth, firestore } = require('../config/firebase');
 const { createUserWithEmailAndPassword, signInWithEmailAndPassword } = require('firebase/auth');
-const { doc, setDoc } = require('firebase/firestore');
+const { doc, setDoc, updateDoc } = require('firebase/firestore');
+const jwt = require('jsonwebtoken'); // Ensure you have this package installed
 
 // Register a new user
 const registerUser = async (req, res) => {
@@ -21,33 +22,15 @@ const registerUser = async (req, res) => {
       userid: userId,
       username,
       email,
-      preferences: preferences || [],  // Default to empty array if not provided
+      preferences: preferences || [], // Default to empty array if not provided
       savedRecipesIds: [],
       mealPlanIds: []
     });
 
-    // Respond with user data
+    // Respond with user data (without password)
     res.status(201).json({ userid: userId, username, email });
   } catch (error) {
     console.error('Error creating user:', error);
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// Update user profile
-const updateUserProfile = async (req, res) => {
-  const { uid } = req.user; // Assume user is authenticated and uid is in req.user
-  const { username, preferences, savedRecipesIds, mealPlanIds } = req.body;
-
-  try {
-    await firestore.collection('users').doc(uid).update({
-      username,
-      preferences,
-      savedRecipesIds,
-      mealPlanIds,
-    });
-    res.status(200).json({ message: 'Profile updated successfully' });
-  } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
@@ -66,8 +49,28 @@ const loginUser = async (req, res) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // You can include additional logic here (e.g., generating tokens, session management)
-    res.status(200).json({ message: "Login successful", uid: user.uid, email: user.email });
+    // Generate a JWT token
+    const token = jwt.sign({ uid: user.uid }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ message: "Login successful", token, uid: user.uid, email: user.email });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Update user profile
+const updateUserProfile = async (req, res) => {
+  const { uid } = req.user; // Assume user is authenticated and uid is in req.user
+  const { username, preferences, savedRecipesIds, mealPlanIds } = req.body;
+
+  try {
+    await updateDoc(doc(firestore, 'users', uid), {
+      username,
+      preferences,
+      savedRecipesIds,
+      mealPlanIds,
+    });
+    res.status(200).json({ message: 'Profile updated successfully' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -75,6 +78,6 @@ const loginUser = async (req, res) => {
 
 module.exports = {
   registerUser,
-  updateUserProfile,
-  loginUser
+  loginUser,
+  updateUserProfile
 };
