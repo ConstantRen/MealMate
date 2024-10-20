@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MealMate | Nutritional Plan</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="images/logo.png" alt="logo" class="logo-image">
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipe.html">Recipe Discovery</a></li>
+                <li><a href="nutritionPlan.html">Nutrition Tracking / Meal Plan</a></li>
+                <li><a href="signIN.html">Sign Up</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="content">
+        <div class="dashboard-container">
+            <!-- Dynamic Calendar -->
+            <div class="calendar">
+                <div id="days-container" class="days"></div>
+            </div>
+
+            <<!-- Nutrients Section -->
+<div class="nutrients">
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line"></div> 
+            <div class="text-container">
+                <div class="label">Carbs</div>
+                <div class="values" id="carbsValue">0 g</div> <!-- Updated to 0 for dynamic loading -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line2"></div> 
+            <div class="text-container">
+                <div class="label">Protein</div>
+                <div class="values" id="proteinValue">0 g</div> <!-- Updated to 0 for dynamic loading -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line3"></div> 
+            <div class="text-container">
+                <div class="label">Fat</div>
+                <div class="values" id="fatValue">0 g</div> <!-- Updated to 0 for dynamic loading -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line4"></div> 
+            <div class="text-container">
+                <div class="label">Calories</div>
+                <div class="values" id="caloriesValue">0 kcal</div> <!-- New dynamic element -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line5"></div> 
+            <div class="text-container">
+                <div class="label">Fiber</div>
+                <div class="values" id="fiberValue">0 g</div> <!-- New dynamic element -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nutrient">
+        <div class="line-container"> 
+            <div class="vertical-line6"></div> 
+            <div class="text-container">
+                <div class="label">Sugars</div>
+                <div class="values" id="sugarsValue">0 g</div> <!-- New dynamic element -->
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+
+        <!-- Meal Plans Section -->
+        <div class="meal-plan-section">
+            <h2 class="meal-plan-tag">My Meal Plans</h2>
+            <div id="meal-plan-cards-container"></div>
+
+            <div class="action-buttons">
+                <button class="meal-action-btn" id="add-meal-btn">Add Meal</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Function to generate the dynamic calendar and add click events to each date
+        function generateCalendar() {
+            const daysContainer = document.getElementById('days-container');
+            const today = new Date(); // Get today's date
+            const todayISO = today.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+            const currentDay = today.getDay(); // Get current day of the week (0-6)
+            
+            // Get the current Monday
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1)); // If Sunday, go back 6 days
+            
+            // Loop through the week (Monday to Sunday)
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(monday);
+                day.setDate(monday.getDate() + i); // Increment the date by i
+                
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('day');
+                const dayISO = day.toISOString().split('T')[0]; // Get date in YYYY-MM-DD format for comparison
+    
+                // Highlight today's date by adding the 'current-day' class
+                if (dayISO === todayISO) {
+                    dayElement.classList.add('current-day'); // Apply highlight style for the current day
+                }
+    
+                // Format the day element with day name and date
+                const dayName = day.toLocaleString('en-US', { weekday: 'short' });
+                const dayNumber = day.getDate();
+                dayElement.innerHTML = `${dayName}<br>${dayNumber}`;
+                dayElement.setAttribute('data-date', dayISO); // Store date as an attribute
+    
+                // Add click event listener to show recipes for the selected date
+                dayElement.addEventListener('click', () => {
+                    const selectedDate = dayElement.getAttribute('data-date');
+                    fetchMealPlans(selectedDate); // Fetch meal plans for this date
+                });
+    
+                daysContainer.appendChild(dayElement);
+            }
+    
+            // Fetch meal plans for today's date when the calendar is generated
+            fetchMealPlans(todayISO); // Fetch meal plans for today's date automatically
+        }
+    
+        // Fetch meal plans from the backend API
+        async function fetchMealPlans(date) {
+    console.log('Fetching meal plans for date:', date); // Debug log
+    try {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');   
+        if (!token) {
+            console.error('No token found. Please log in again.');
+            return;
+        }
+
+        const response = await fetch(`http://localhost:5000/mealPlan?date=${date}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 403) {
+            console.error('Access denied. Invalid or missing token.');
+            return;
+        }
+
+        const mealPlans = await response.json();
+
+        if (mealPlans.length === 0) {
+            document.getElementById('meal-plan-cards-container').innerHTML = '<p>No meal plans for this date.</p>';
+            resetNutritionalValues(); // Reset nutritional values if no meal plans
+            return;
+        }
+
+        // Populate meal plan cards and calculate nutritional info
+        const container = document.getElementById('meal-plan-cards-container');
+        container.innerHTML = ''; // Clear existing content
+
+        let totalCarbs = 0;
+        let totalProtein = 0;
+        let totalFat = 0;
+        let totalCalories = 0;
+        let totalFiber = 0;
+        let totalSugars = 0;
+
+        mealPlans.forEach(mealPlan => {
+            mealPlan.recipes.forEach(recipeId => {
+                // Fetch recipe details by ID
+                fetchRecipeDetails(recipeId).then(recipe => {
+                    // Update nutritional totals
+                    totalCarbs += recipe.nutritionalInfo.carbohydrates;
+                    totalProtein += recipe.nutritionalInfo.protein;
+                    totalFat += recipe.nutritionalInfo.fat;
+                    totalCalories += recipe.nutritionalInfo.calories;
+                    totalFiber += recipe.nutritionalInfo.fiber;
+                    totalSugars += recipe.nutritionalInfo.sugars;
+
+                    const mealCard = `
+                        <div class="meal-plan-card">
+                            <img src="${recipe.image}" alt="${recipe.title}">
+                            <div class="meal-info">
+                                <h3>${recipe.cuisine || 'Meal Type'}</h3>
+                                <h2>${recipe.title}</h2>
+                                <p>
+                                    CARBS: <strong>${recipe.nutritionalInfo.carbohydrates}g</strong> &nbsp; &nbsp; 
+                                    FATS: <strong>${recipe.nutritionalInfo.fat}g</strong> &nbsp; &nbsp; 
+                                    PROTEIN: <strong>${recipe.nutritionalInfo.protein}g</strong> &nbsp; &nbsp; 
+                                    CALORIES: <strong>${recipe.nutritionalInfo.calories} kcal</strong> &nbsp; &nbsp; 
+                                    FIBER: <strong>${recipe.nutritionalInfo.fiber}g</strong> &nbsp; &nbsp; 
+                                    SUGARS: <strong>${recipe.nutritionalInfo.sugars}g</strong>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += mealCard;
+
+                    // Update the displayed nutritional values
+                    updateNutritionalValues(totalCarbs, totalProtein, totalFat, totalCalories, totalFiber, totalSugars);
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Error fetching meal plans:', error);
+    }
+}
+
+// Function to update the displayed nutritional values
+function updateNutritionalValues(carbs, protein, fat, calories, fiber, sugars) {
+    document.getElementById('carbsValue').innerText = `${carbs} g`;
+    document.getElementById('proteinValue').innerText = `${protein} g`;
+    document.getElementById('fatValue').innerText = `${fat} g`;
+    document.getElementById('caloriesValue').innerText = `${calories} kcal`;
+    document.getElementById('fiberValue').innerText = `${fiber} g`;
+    document.getElementById('sugarsValue').innerText = `${sugars} g`;
+}
+
+// Function to reset nutritional values
+function resetNutritionalValues() {
+    document.getElementById('carbsValue').innerText = `0 g`;
+    document.getElementById('proteinValue').innerText = `0 g`;
+    document.getElementById('fatValue').innerText = `0 g`;
+    document.getElementById('caloriesValue').innerText = `0 kcal`;
+    document.getElementById('fiberValue').innerText = `0 g`;
+    document.getElementById('sugarsValue').innerText = `0 g`;
+}
+// Function to update nutritional information in the dashboard
+function updateNutritionalInfo(carbs, protein, fat) {
+    document.getElementById('carbsValue').textContent = `${carbs} g`;
+    document.getElementById('proteinValue').textContent = `${protein} g`;
+    document.getElementById('fatValue').textContent = `${fat} g`;
+}// Example of a function to fetch recipe details
+async function fetchRecipeDetails(recipeId) {
+    const token = localStorage.getItem('token'); // Retrieve your token
+    const response = await fetch(`http://localhost:5000/recipe/${recipeId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!response.ok) {
+        console.error('Error fetching recipe details:', response.statusText);
+        return {};
+    }
+    return await response.json();
+}
+   
+        // Fetch meal plans and generate calendar when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            generateCalendar(); // Generate the dynamic calendar
+        });
+        document.getElementById('add-meal-btn').addEventListener('click', () => {
+        const activeDay = document.querySelector('.day.active') || document.querySelector('.current-day');
+        if (activeDay) {
+            const selectedDate = activeDay.getAttribute('data-date');
+            // Redirect to Recipe Discovery page with the selected date as a query parameter
+            window.location.href = `recipe.html?date=${selectedDate}`;
+        } else {
+            alert('Please select a date to add a meal.');
+        }
+    });
+    </script>
+    
+    
+</body>
+</html>

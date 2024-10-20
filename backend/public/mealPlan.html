@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Meal Plans</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="images/logo.png" alt="logo" class="logo-image">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipe.html">Recipe Discovery</a></li>
+                <li><a href="nutritionPlan.html">Nutrition Tracking / Meal Plan</a></li>
+                <li><a href="signIN.html">Sign Up</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Your Meal Plans</h1>
+
+        <!-- Form for creating meal plans -->
+        <form id="meal-plan-form">
+            <input type="text" id="meal-plan-title" placeholder="Meal Plan Title" required>
+            <input type="date" id="meal-plan-start-date" required>
+            <input type="date" id="meal-plan-end-date" required>
+            <button type="submit">Create Meal Plan</button>
+        </form>
+
+        <div id="meal-plans-container"></div>
+    </main>
+
+    <script>
+        const mealPlanForm = document.getElementById('meal-plan-form');
+        const mealPlansContainer = document.getElementById('meal-plans-container');
+
+        // Fetch and display user's meal plans
+        async function fetchMealPlans() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/mealPlan', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // Log the raw response to the console for inspection
+                const rawResponse = await response.text();
+                console.log('Raw Response:', rawResponse);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error response from server:', errorData);
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = JSON.parse(rawResponse);
+                displayMealPlans(data); // Access data directly
+            } catch (error) {
+                console.error('Error fetching meal plans:', error);
+                alert('Failed to fetch meal plans');
+            }
+        }
+
+        // Display meal plans in the DOM
+        function displayMealPlans(mealPlans) {
+            mealPlansContainer.innerHTML = '';
+
+            // Check if mealPlans is an array
+            if (!Array.isArray(mealPlans)) {
+                console.error('Expected an array but got:', mealPlans);
+                return;
+            }
+
+            mealPlans.forEach(mealPlan => {
+                const mealPlanDiv = document.createElement('div');
+                mealPlanDiv.className = 'meal-plan';
+                mealPlanDiv.innerHTML = `
+                    <h3>${mealPlan.title}</h3>
+                    <p>Start Date: ${new Date(mealPlan.startDate).toLocaleDateString()}</p>
+                    <p>End Date: ${new Date(mealPlan.endDate).toLocaleDateString()}</p>
+                    <h4>Recipes:</h4>
+                    <ul>
+                        ${mealPlan.recipes.length > 0 
+                          ? mealPlan.recipes.map(recipe => `<li>${recipe.title}</li>`).join('') 
+                          : '<li>No recipes added yet</li>'}
+                    </ul>
+                    <button onclick="editMealPlan('${mealPlan._id}', '${mealPlan.title}', '${mealPlan.startDate}', '${mealPlan.endDate}')">Edit</button>
+                    <button onclick="deleteMealPlan('${mealPlan._id}')">Delete</button>
+                `;
+                mealPlansContainer.appendChild(mealPlanDiv);
+            });
+        }
+
+        // Create a new meal plan
+        mealPlanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('meal-plan-title').value;
+            const startDate = document.getElementById('meal-plan-start-date').value;
+            const endDate = document.getElementById('meal-plan-end-date').value;
+
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch('http://localhost:5000/mealPlan', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title, startDate, endDate }),
+                });
+
+                if (response.ok) {
+                    console.log(response.status);
+                    fetchMealPlans();  // Refresh meal plans
+                    mealPlanForm.reset();  // Clear the form
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.message);
+                }
+            } catch (error) {
+                console.error('Error creating meal plan:', error);
+            }
+        });
+
+        // Edit a meal plan (populate form with current data)
+        function editMealPlan(id, title, startDate, endDate) {
+            document.getElementById('meal-plan-title').value = title;
+            document.getElementById('meal-plan-start-date').value = new Date(startDate).toISOString().split('T')[0];  // Format for input
+            document.getElementById('meal-plan-end-date').value = new Date(endDate).toISOString().split('T')[0];  // Format for input
+            mealPlanForm.onsubmit = async (e) => {
+                e.preventDefault();
+                await updateMealPlan(id);
+            };
+        }
+
+        // Update a meal plan
+        async function updateMealPlan(id) {
+            const title = document.getElementById('meal-plan-title').value;
+            const startDate = document.getElementById('meal-plan-start-date').value;
+            const endDate = document.getElementById('meal-plan-end-date').value;
+
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`http://localhost:5000/mealPlan/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title, startDate, endDate }),
+                });
+
+                if (response.ok) {
+                    fetchMealPlans();  // Refresh meal plans
+                    mealPlanForm.reset();  // Clear the form
+                    mealPlanForm.onsubmit = (e) => mealPlanForm.addEventListener('submit', createMealPlan);  // Reset the form submission handler
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.message);
+                }
+            } catch (error) {
+                console.error('Error updating meal plan:', error);
+            }
+        }
+
+        // Delete a meal plan
+        async function deleteMealPlan(id) {
+            const token = localStorage.getItem('token');
+
+            if (confirm('Are you sure you want to delete this meal plan?')) {
+                try {
+                    const response = await fetch(`http://localhost:5000/mealPlan/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (response.ok) {
+                        fetchMealPlans();  // Refresh meal plans
+                    } else {
+                        const errorData = await response.json();
+                        alert(errorData.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting meal plan:', error);
+                }
+            }
+        }
+
+        // Call the function to fetch meal plans when the page loads
+        document.addEventListener('DOMContentLoaded', fetchMealPlans);
+    </script>
+</body>
+</html>

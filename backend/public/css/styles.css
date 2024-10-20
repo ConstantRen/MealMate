@@ -1,0 +1,589 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 20px;
+}
+
+/*header .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+}*/
+
+.logo-image {
+    width: 80px; /* Adjust the size as needed */
+    height: 80px;
+    border-radius: 20px;
+    object-fit: cover; /* Ensures the image scales correctly */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #185a37;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-radius: 100px;
+    box-shadow: 10px 15px  rgba(0, 0, 0, 0.3);
+    background-color: #185a37;
+    padding: 40px;
+    margin-top: 250px;
+    margin-left: 400px;
+    margin-right: 400px;
+}
+
+.signup, .signin {
+    width: 45%;
+    margin-left: 30px;
+    margin-right: -30px;
+}
+
+.line {
+    border-left: 6px solid white;
+    height: 300px;
+    position: absolute;
+    left: 50%;
+    margin-left: -3px;
+  }
+
+
+h2 {
+    margin-bottom: 20px;
+    color: #fff;
+    margin-left: 120px;
+}
+
+input {
+    width: 70%;
+    padding: 10px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    margin-left: 5px ;
+    color: #fff;
+}
+
+.remember input[type="checkbox"] {
+    margin-left: -140px;
+}
+
+.forgot-password {
+    color: #fff; 
+    text-decoration: none;
+    margin-left: -80px;
+    display: block;
+}
+button {
+    width: 20%;
+    padding: 10px;
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-left: 120px;
+}
+
+
+button:hover {
+    background-color: #185a37;
+}
+
+.image-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.model-image {
+    max-width: 20%;
+    margin-top: -320px;
+    margin-right: -1450px;
+
+}
+.food-image {
+    max-width: 20%;
+    margin-top: -385px;
+    margin-left: -1420px;
+}
+/*home page*/ 
+
+.container1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px;
+    margin-top: 220px;
+    margin-left: 100px;
+}
+.line1{
+    border-left: 3px solid #004d32;
+    height: 500px;
+    position: absolute;
+    left: 50%;
+    margin-left: -3px;
+    margin-top: -300px;
+  }
+
+.text-content {
+    max-width: 40%;
+}
+
+.text-content h1 {
+    font-size: 36px;
+    color: #006e43;
+}
+
+.text-content p {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #006e43;
+    margin-bottom: 20px;
+    margin-right: 120px;
+}
+
+.cta-button {
+    background-color: #006e43;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 15px;
+    font-size: 16px;
+}
+
+.cta-button:hover {
+    background-color: #004d32;
+}
+.circle-bg {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 700px;
+    height: 500px;
+    background-color: #004d32; 
+    border-radius: 99.12% 0 0 0 ;
+    z-index: -1;
+  }
+  .image-container1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+  .note-image{
+    width: 1100px;
+    margin-top: -280px;
+    margin-right: -1200px;
+  }
+
+/*recipe*/ 
+.line2{
+    border-left: 3px solid #004d32;
+    height: 500px;
+    position: absolute;
+    left: 50%;
+    margin-left: -3px;
+    margin-top: 100px;
+  }
+  .main-content {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-left: 200px;
+    margin-top: 50px;
+    
+}
+
+.text-section {
+    width: 30%;
+    margin-left: 100px;
+    margin-top: 100px;
+    
+}
+
+.text-section h1 {
+    font-size: 48px;
+    color: #1D9A57;
+    margin-bottom: 20px;
+}
+
+.text-section p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    line-height: 1.6;
+} 
+
+.text-section button {
+    padding: 10px 20px;
+    background-color: #1D9A57;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.recipe-section {
+    display: flex;
+    gap: 20px;
+    width: 55%;
+    margin-left: 10px;
+    margin-right: -110px;
+    margin-top: 100px;
+}
+
+.recipe-card {
+    display: flex;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 80%;
+    text-align: center;
+    height: 20%;
+}
+
+.recipe-card img {
+    width: 20%;
+    border-radius: 10px;
+}
+
+.current-day {
+    background-color: #FFD700; /* Gold background for highlighting */
+    color: #fff; /* White text color */
+    border-radius: 50%; /* Make it look like a circle */
+    padding: 10px;
+    font-weight: bold;
+}
+
+.recipe-card h3 {
+    font-size: 24px;
+    color: #1D9A57;
+    margin: 15px 0;
+}
+
+.recipe-card p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.recipe-card .rating {
+    font-size: 20px;
+    color: #FFD700;
+}
+.rating {
+    margin-top: -20px;
+}
+
+/*Nutrition*/
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 20px;
+}
+
+.dashboard-container {
+    flex: 0.45;
+    background-color: #064d2a;
+    color: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 50px rgba(0, 77, 50, 0.5);
+}
+
+.calendar .days {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.calendar .days :hover {
+    background-color: #0ba258;
+    font-weight: bold;
+    color: white;
+}
+
+.day {
+    flex: 1;
+    padding: 10px;
+    background-color: white;
+    border-radius: 10px;
+    margin: 0 2px;
+    text-align: center;
+    font-size: 14px;
+    color: black;
+}
+
+
+
+.protein-chart {
+    background-color: white;
+    border-radius: 10px;
+    color: #333;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.chart {
+    display: flex; 
+    align-items: flex-end; 
+    height: 150px; 
+    width: 100%; 
+    padding: 10px; 
+    gap: 20px; 
+}
+
+.bar {
+    width: 2%; 
+    background-color: #064d2a;
+    border-radius: 5px;
+    margin-left: 5px; 
+    margin-right: 5px; 
+}
+
+
+.nutrients {
+    padding: 10px;
+    border-radius: 10px;
+    color: rgb(19, 116, 25);
+    line-height: 25px;
+}
+
+.nutrient {
+    display: flex;
+    justify-content: space-between; 
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 8px; 
+    margin-bottom: 15px; 
+    background-color: white; 
+}
+
+
+.line-container {
+    display: flex;                
+    align-items: center;        
+}
+
+
+.vertical-line {
+    width: 5px;                  
+    background-color: Blue;  
+    height: 50px;               
+    margin-right: 10px;          
+}
+
+.vertical-line2 {
+    width: 5px;                  
+    background-color: Green;  
+    height: 50px;               
+    margin-right: 10px;          
+}
+
+.vertical-line3 {
+    width: 5px;                  
+    background-color: Yellow;  
+    height: 50px;               
+    margin-right: 10px;          
+}
+.vertical-line4 {
+    width: 5px;                  
+    background-color:  rgb(196, 164, 132);  
+    height: 50px;               
+    margin-right: 10px;          
+}
+.vertical-line5 {
+    width: 5px;                  
+    background-color: Orange;  
+    height: 50px;               
+    margin-right: 10px;          
+}
+.vertical-line6 {
+    width: 5px;                  
+    background-color: Pink;  
+    height: 50px;               
+    margin-right: 10px;          
+}
+
+.text-container {
+    display: flex;
+    flex-direction: column;      
+}
+
+.label {
+    font-weight: bold;          
+}
+
+.values {
+    font-size: 1.2em;            
+}
+
+.remaining {
+    display: flex;               
+    flex-direction: column;      
+    text-align: right;
+    margin-top: 4px;
+    font-weight: bold;          
+}
+
+.remaining-value {
+    font-size: 1.2em;       
+    font-weight: normal;
+    text-align: center;
+}
+
+
+
+.line3 {
+    border-left: 3px solid #004d32;
+    height: 690px;
+}
+
+.meal-plan-section {
+    flex: 0.45;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.meal-plan-tag {
+    font-size: 16px;
+    font-weight: 1000;
+    color: #185a37;
+    margin-bottom: 20px;
+    margin-left: -2px;
+    margin-top: -2px;
+}
+
+.meal-plan-card {
+    display: flex;
+    align-items: flex-start;
+    background-color: #185a37;
+    border-radius: 10px;
+    padding: 20px;
+    color: white;
+    gap: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.meal-plan-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.meal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.meal-info h3 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.meal-info h2 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.meal-info p {
+    font-size: 12px;
+    margin-top: 10px;
+    color: #e5e5e5;
+}
+
+
+.action-buttons {
+    display: flex;
+    margin-top: 20px;
+    margin-left: -120px;
+    width:190%;
+}
+
+.meal-action-btn {
+    background-color: #064d2a;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.meal-action-btn:hover {
+    background-color: #043a20;
+}
+
+#num {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+
+#num2 {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    border-radius: 8px;
+    padding: 5px 17px;
+}
+
+#p1 {
+    color: lightgreen;
+}
+
+#p2 {
+    color: yellow;
+}
+
+#p3 {
+    color: rgb(70, 212, 205);
+}
+
+#protein {
+    color: rgb(19, 116, 25);
+}
