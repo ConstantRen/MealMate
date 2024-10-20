@@ -192,6 +192,7 @@
         let totalSugars = 0;
 
         mealPlans.forEach(mealPlan => {
+            const mealPlanId = mealPlan._id;
             mealPlan.recipes.forEach(recipeId => {
                 // Fetch recipe details by ID
                 fetchRecipeDetails(recipeId).then(recipe => {
@@ -204,21 +205,25 @@
                     totalSugars += recipe.nutritionalInfo.sugars;
 
                     const mealCard = `
+                        
                         <div class="meal-plan-card">
                             <img src="${recipe.image}" alt="${recipe.title}">
                             <div class="meal-info">
                                 <h3>${recipe.cuisine || 'Meal Type'}</h3>
                                 <h2>${recipe.title}</h2>
                                 <p>
-                                    CARBS: <strong>${recipe.nutritionalInfo.carbohydrates}g</strong> &nbsp; &nbsp; 
-                                    FATS: <strong>${recipe.nutritionalInfo.fat}g</strong> &nbsp; &nbsp; 
-                                    PROTEIN: <strong>${recipe.nutritionalInfo.protein}g</strong> &nbsp; &nbsp; 
-                                    CALORIES: <strong>${recipe.nutritionalInfo.calories} kcal</strong> &nbsp; &nbsp; 
-                                    FIBER: <strong>${recipe.nutritionalInfo.fiber}g</strong> &nbsp; &nbsp; 
+                                    CARBS: <strong>${recipe.nutritionalInfo.carbohydrates}g</strong> &nbsp; &nbsp;
+                                    FATS: <strong>${recipe.nutritionalInfo.fat}g</strong> &nbsp; &nbsp;
+                                    PROTEIN: <strong>${recipe.nutritionalInfo.protein}g</strong> &nbsp; &nbsp;
+                                    CALORIES: <strong>${recipe.nutritionalInfo.calories} kcal</strong> &nbsp; &nbsp;
+                                    FIBER: <strong>${recipe.nutritionalInfo.fiber}g</strong> &nbsp; &nbsp;
                                     SUGARS: <strong>${recipe.nutritionalInfo.sugars}g</strong>
                                 </p>
+                                <!-- Delete button for each meal -->
+                                <button class="delete-meal-btn" data-recipe-id="${mealPlanId}">Delete Meal</button> <!-- Added delete button -->
                             </div>
                         </div>
+
                     `;
                     container.innerHTML += mealCard;
 
@@ -285,7 +290,47 @@ async function fetchRecipeDetails(recipeId) {
             alert('Please select a date to add a meal.');
         }
     });
-    </script>
+    async function deleteMeal(mealPlanId) {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    try {
+        const response = await fetch(`http://localhost:5000/mealPlan/${mealPlanId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 403) {
+            console.error('Access denied. Invalid or missing token.');
+            return;
+        }
+
+        if (response.ok) {
+            console.log('Meal deleted successfully');
+            location.reload()
+        } else {
+            console.error('Failed to delete the meal:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error deleting meal:', error);
+    }
+}
+
+// Attach the delete event listener to each delete button
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-meal-btn')) {
+        const mealPlanId = event.target.getAttribute('data-recipe-id');
+        console.log(mealPlanId)
+        const activeDay = document.querySelector('.day.active') || document.querySelector('.current-day');
+        if (activeDay) {
+            const selectedDate = activeDay.getAttribute('data-date');
+            deleteMeal(mealPlanId); // Pass recipeId and selected date
+        }
+    }
+});    </script>
     
     
 </body>
