@@ -8,9 +8,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">
-            <img src="images/logo.png" alt="logo" class="logo-image">
-        </div>
+        <div class="logo">LOGO</div>
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -30,7 +28,6 @@
         </div>
         <div class="line2"></div>
         <div class="recipe-section"></div> <!-- Dynamic recipe section -->
-        <div class="recipe-detail-section" style="display: none;"></div> <!-- Detailed recipe section -->
     </section>
 
     <script>
@@ -49,9 +46,6 @@
             } else {
                 console.error('No date selected.');
             }
-
-            // Fetch recipes after the DOM is loaded
-            fetchRecipes();
         });
 
         // Function to fetch recipes from the server
@@ -89,136 +83,94 @@
             }
         }
 
-        // Function to fetch recipe details
-        async function fetchRecipeDetails(recipeId) {
-            try {
-                const response = await fetch(`/recipe/${recipeId}`); // Adjust endpoint as needed
-                if (!response.ok) throw new Error('Failed to fetch recipe details');
-
-                const recipe = await response.json();
-                renderRecipeDetails(recipe);
-            } catch (error) {
-                console.error('Error fetching recipe details:', error);
-            }
-        }
-
-        // Function to render recipe details
-        function renderRecipeDetails(recipe) {
-            const recipeDetailSection = document.querySelector('meal-plan-cards-container');
-            recipeDetailSection.innerHTML = `
-                <div class="recipe-detail-card">
-                    <img src="${recipe.image}" alt="${recipe.title}" class="recipe-detail-image">
-                    <h2>${recipe.title}</h2>
-                    <p><strong>Cuisine:</strong> ${recipe.cuisine}</p>
-                    <p><strong>Calories:</strong> ${recipe.calories}</p>
-                    <p><strong>Fiber:</strong> ${recipe.fiber}</p>
-                    <p><strong>Sugars:</strong> ${recipe.sugars}</p>
-                    <p><strong>Ingredients:</strong></p>
-                    <ul>
-                        ${recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
-                    </ul>
-                    <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-                    <button class="add-to-meal-plan" data-recipe-id="${recipe._id}">Add to Meal Plan ➕</button>
-                </div>
-            `;
-            recipeDetailSection.style.display = 'block'; // Show details
-        }
-
         // Function to add a selected recipe to the meal plan
         async function addRecipeToMealPlan(recipeId) {
-            try {
-                const token = localStorage.getItem('token');
-                const userId = localStorage.getItem('userId');
-                const selectedDate = new URLSearchParams(window.location.search).get('date');
+    try {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const selectedDate = new URLSearchParams(window.location.search).get('date');
 
-                console.log('Token:', token);
-                console.log('User ID:', userId);
-                console.log('Selected Date:', selectedDate);
-                console.log('Recipe ID:', recipeId);
+        console.log('Token:', token);
+        console.log('User ID:', userId);
+        console.log('Selected Date:', selectedDate);
+        console.log('Recipe ID:', recipeId);
 
-                if (!selectedDate) {
-                    console.error('Date is required but not provided.');
-                    return; // Stop execution if date is missing
-                }
-
-                // Fetch existing meal plan
-                const mealPlanResponse = await fetch(`http://localhost:5000/mealPlan?date=${selectedDate}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                let mealPlan = await mealPlanResponse.json();
-
-                // If mealPlan exists, update; otherwise, create a new one
-                const mealPlanId = mealPlan && mealPlan._id ? mealPlan._id : null;
-
-                if (!mealPlanId) {
-                    // Create a new meal plan
-                    const newMealPlanResponse = await fetch('http://localhost:5000/mealPlan', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ date: selectedDate, recipeIds: [recipeId], userId: userId })
-                    });
-
-                    console.log('Request Body:', { date: selectedDate, recipeIds: [recipeId], userId: userId }); // Log request body
-
-                    if (newMealPlanResponse.ok) {
-                        console.log('Meal plan created and recipe added.');
-                    } else {
-                        const errorData = await newMealPlanResponse.json();
-                        console.error('Failed to create meal plan:', errorData);
-                    }
-                } else {
-                    // Update the existing meal plan
-                    const response = await fetch(`http://localhost:5000/mealPlan/${mealPlanId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ recipeIds: [...mealPlan.recipeIds, recipeId] })
-                    });
-
-                    if (response.ok) {
-                        console.log('Recipe added to meal plan.');
-                    } else {
-                        const errorData = await response.json();
-                        console.error('Failed to update meal plan:', errorData);
-                    }
-                }
-            } catch (error) {
-                console.error('Error adding recipe to meal plan:', error);
-            }
+        if (!selectedDate) {
+            console.error('Date is required but not provided.');
+            return; // Stop execution if date is missing
         }
 
+        // Fetch existing meal plan
+        const mealPlanResponse = await fetch(`http://localhost:5000/mealPlan?date=${selectedDate}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        let mealPlan = await mealPlanResponse.json();
+
+        // If mealPlan exists, update; otherwise, create a new one
+        const mealPlanId = mealPlan && mealPlan._id ? mealPlan._id : null;
+
+        if (!mealPlanId) {
+            // Create a new meal plan
+            const newMealPlanResponse = await fetch('http://localhost:5000/mealPlan', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: selectedDate, recipeIds: [recipeId], userId: userId })
+            });
+
+            console.log('Request Body:', { date: selectedDate, recipeIds: [recipeId], userId: userId }); // Log request body
+
+            if (newMealPlanResponse.ok) {
+                console.log('Meal plan created and recipe added.');
+            } else {
+                const errorData = await newMealPlanResponse.json();
+                console.error('Failed to create meal plan:', errorData);
+            }
+        } else {
+            // Update the existing meal plan
+            const response = await fetch(`http://localhost:5000/mealPlan/${mealPlanId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ recipeIds: [...mealPlan.recipeIds, recipeId] })
+            });
+
+            if (response.ok) {
+                console.log('Recipe added to meal plan.');
+            } else {
+                const errorData = await response.json();
+                console.error('Failed to update meal plan:', errorData);
+            }
+        }
+    } catch (error) {
+        console.error('Error adding recipe to meal plan:', error);
+    }
+}
         document.addEventListener('DOMContentLoaded', () => {
             const recipeSection = document.querySelector('.recipe-section');
-            const recipeDetailSection = document.querySelector('.recipe-detail-section');
 
             // Delegated event listener for dynamically added recipe cards
             recipeSection.addEventListener('click', function (e) {
                 if (e.target && e.target.closest('.recipe-card')) {
                     const recipeCard = e.target.closest('.recipe-card');
                     const recipeId = recipeCard.getAttribute('data-recipe-id');
-                    console.log('Selected Recipe ID:', recipeId); // For debugging
+                    console.log('Selected Recipe ID:', recipeId); // Add this line for debugging
 
                     if (recipeId) {
-                        fetchRecipeDetails(recipeId); // Fetch detailed recipe
+                        addRecipeToMealPlan(recipeId);
                     } else {
                         console.error('Recipe ID is undefined.');
                     }
                 }
             });
 
-            // Event listener for adding recipe to meal plan
-            recipeDetailSection.addEventListener('click', function (e) {
-                if (e.target && e.target.classList.contains('add-to-meal-plan')) {
-                    const recipeId = e.target.getAttribute('data-recipe-id');
-                    addRecipeToMealPlan(recipeId);
-                }
-            });
+            // Fetch recipes after the DOM is loaded
+            fetchRecipes();
         });
     </script>
 </body>
