@@ -54,7 +54,7 @@
         // Function to fetch recipes from the server
         async function fetchRecipes() {
             try {
-                const response = await fetch('/recipe');
+                const response = await fetch('/recipe'); // Adjust the endpoint if needed
                 if (!response.ok) throw new Error('Failed to fetch recipes');
 
                 const recipes = await response.json();
@@ -68,98 +68,134 @@
 
                 recipes.forEach(recipe => {
                     const recipeCard = document.createElement('div');
-                    recipeCard.className = 'recipe-card';
-                    recipeCard.setAttribute('data-recipe-id', recipe._id); // Ensure the recipe ID is correctly assigned
+                    recipeCard.className = 'recipe-card card mb-4'; // Card class for Bootstrap-like style
 
-                    const imageSrc = recipe.image ? recipe.image : '/images/placeholder.png';
+                    recipeCard.setAttribute('data-recipe-id', recipe._id); // Add recipe ID for potential future use
 
+                    // Handle image fallback in case the recipe image doesn't exist
+                    const imageSrc = recipe.image ? `/${recipe.image}` : '/images/placeholder.png';
+
+                    // Ingredients list
+                    const ingredientsList = recipe.ingredients.map(ingredient => 
+                        `<li class="ingredient-item">${ingredient.quantity} ${ingredient.name}</li>`).join('');
+
+                    // Nutritional info
+                    const nutritionalInfo = recipe.nutritionalInfo ? `
+                        <p class="nutritional-info"><strong>Calories:</strong> ${recipe.nutritionalInfo.calories} kcal</p>
+                        <p class="nutritional-info"><strong>Protein:</strong> ${recipe.nutritionalInfo.protein} g</p>
+                        <p class="nutritional-info"><strong>Fat:</strong> ${recipe.nutritionalInfo.fat} g</p>
+                        <p class="nutritional-info"><strong>Carbohydrates:</strong> ${recipe.nutritionalInfo.carbohydrates} g</p>
+                        <p class="nutritional-info"><strong>Fiber:</strong> ${recipe.nutritionalInfo.fiber} g</p>
+                        <p class="nutritional-info"><strong>Sugars:</strong> ${recipe.nutritionalInfo.sugars} g</p>
+                    ` : '<p class="nutritional-info">No nutritional information available.</p>';
+
+                    // Recipe card structure with Bootstrap-like classes for styling
                     recipeCard.innerHTML = `
-                        <img src="${imageSrc}" alt="${recipe.title}" class="recipe-image">
-                        <h3>${recipe.title}</h3>
-                        <p>Cuisine: ${recipe.cuisine}</p>
+                        <div class="card-img-top">
+                            <img src="${imageSrc}" alt="${recipe.title}" class="recipe-image img-fluid rounded">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="recipe-title card-title">${recipe.title}</h3>
+                            <p class="recipe-cuisine card-text"><strong>Cuisine:</strong> ${recipe.cuisine}</p>
+
+                            <h4 class="ingredients-title mt-3">Ingredients:</h4>
+                            <ul class="ingredients-list list-unstyled">${ingredientsList}</ul>
+
+                            <h4 class="instructions-title mt-3">Instructions:</h4>
+                            <p class="recipe-instructions card-text">${recipe.instructions}</p>
+
+                            <h4 class="nutritional-title mt-3">Nutritional Information:</h4>
+                            <div class="nutritional-details">${nutritionalInfo}</div>
+
+                            <button class="add-meal-plan-btn btn btn-primary mt-3">Add to Meal Plan</button>
+                        </div>
                     `;
 
                     recipeSection.appendChild(recipeCard);
                 });
             } catch (error) {
+                const recipeSection = document.querySelector('.recipe-section');
+                recipeSection.innerHTML = '<p class="text-danger">Error loading recipes. Please try again later.</p>';
                 console.error('Error fetching recipes:', error);
             }
         }
 
         // Function to add a selected recipe to the meal plan
         async function addRecipeToMealPlan(recipeId) {
-    try {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-        const selectedDate = new URLSearchParams(window.location.search).get('date');
+            try {
+                const token = localStorage.getItem('token');
+                const userId = localStorage.getItem('userId');
+                const selectedDate = new URLSearchParams(window.location.search).get('date');
 
-        console.log('Token:', token);
-        console.log('User ID:', userId);
-        console.log('Selected Date:', selectedDate);
-        console.log('Recipe ID:', recipeId);
+                console.log('Token:', token);
+                console.log('User ID:', userId);
+                console.log('Selected Date:', selectedDate);
+                console.log('Recipe ID:', recipeId);
 
-        if (!selectedDate) {
-            console.error('Date is required but not provided.');
-            return; // Stop execution if date is missing
+                if (!selectedDate) {
+                    console.error('Date is required but not provided.');
+                    return; // Stop execution if date is missing
+                }
+
+                // Fetch existing meal plan
+                const mealPlanResponse = await fetch(`http://localhost:5000/mealPlan?date=${selectedDate}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                let mealPlan = await mealPlanResponse.json();
+
+                // If mealPlan exists, update; otherwise, create a new one
+                const mealPlanId = mealPlan && mealPlan._id ? mealPlan._id : null;
+
+                if (!mealPlanId) {
+                    // Create a new meal plan
+                    const newMealPlanResponse = await fetch('http://localhost:5000/mealPlan', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ date: selectedDate, recipeIds: [recipeId], userId: userId })
+                    });
+
+                    console.log('Request Body:', { date: selectedDate, recipeIds: [recipeId], userId: userId }); // Log request body
+
+                    if (newMealPlanResponse.ok) {
+                        console.log('Meal plan created and recipe added.');
+                    } else {
+                        const errorData = await newMealPlanResponse.json();
+                        console.error('Failed to create meal plan:', errorData);
+                    }
+                } else {
+                    // Update the existing meal plan
+                    const response = await fetch(`http://localhost:5000/mealPlan/${mealPlanId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ recipeIds: [...mealPlan.recipeIds, recipeId] })
+                    });
+
+                    if (response.ok) {
+                        console.log('Recipe added to meal plan.');
+                    } else {
+                        const errorData = await response.json();
+                        console.error('Failed to update meal plan:', errorData);
+                    }
+                }
+            } catch (error) {
+                console.error('Error adding recipe to meal plan:', error);
+            }
         }
 
-        // Fetch existing meal plan
-        const mealPlanResponse = await fetch(`http://localhost:5000/mealPlan?date=${selectedDate}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        let mealPlan = await mealPlanResponse.json();
-
-        // If mealPlan exists, update; otherwise, create a new one
-        const mealPlanId = mealPlan && mealPlan._id ? mealPlan._id : null;
-
-        if (!mealPlanId) {
-            // Create a new meal plan
-            const newMealPlanResponse = await fetch('http://localhost:5000/mealPlan', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ date: selectedDate, recipeIds: [recipeId], userId: userId })
-            });
-
-            console.log('Request Body:', { date: selectedDate, recipeIds: [recipeId], userId: userId }); // Log request body
-
-            if (newMealPlanResponse.ok) {
-                console.log('Meal plan created and recipe added.');
-            } else {
-                const errorData = await newMealPlanResponse.json();
-                console.error('Failed to create meal plan:', errorData);
-            }
-        } else {
-            // Update the existing meal plan
-            const response = await fetch(`http://localhost:5000/mealPlan/${mealPlanId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ recipeIds: [...mealPlan.recipeIds, recipeId] })
-            });
-
-            if (response.ok) {
-                console.log('Recipe added to meal plan.');
-            } else {
-                const errorData = await response.json();
-                console.error('Failed to update meal plan:', errorData);
-            }
-        }
-    } catch (error) {
-        console.error('Error adding recipe to meal plan:', error);
-    }
-}
         document.addEventListener('DOMContentLoaded', () => {
-            const recipeSection = document.querySelector('.recipe-section');
+            // Fetch recipes after the DOM is loaded
+            fetchRecipes();
 
-            // Delegated event listener for dynamically added recipe cards
-            recipeSection.addEventListener('click', function (e) {
-                if (e.target && e.target.closest('.recipe-card')) {
+            // Delegated event listener for dynamically added "Add to Meal Plan" buttons
+            document.querySelector('.recipe-section').addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('add-meal-plan-btn')) {
                     const recipeCard = e.target.closest('.recipe-card');
                     const recipeId = recipeCard.getAttribute('data-recipe-id');
                     console.log('Selected Recipe ID:', recipeId); // Add this line for debugging
@@ -171,9 +207,6 @@
                     }
                 }
             });
-
-            // Fetch recipes after the DOM is loaded
-            fetchRecipes();
         });
     </script>
 </body>
